@@ -123,7 +123,7 @@ struct ContentView: View {
                 // Second row: Time controls and action buttons
                 HStack(spacing: 8) {
                     // Time input with steppers
-                    HStack(spacing: 6) {
+                    HStack(spacing: 3) {
                         // Hours stepper
                         TimeStepperView(
                             value: isRecording ? .constant(elapsedSeconds / 3600) : $hours,
@@ -133,7 +133,9 @@ struct ContentView: View {
                         )
                         
                         Text(":")
-                            .font(.system(.body, design: .monospaced))
+                            .font(.system(.title3, design: .monospaced))
+                            .fontWeight(.bold)
+                            .foregroundColor(.secondary)
                         
                         // Minutes stepper
                         TimeStepperView(
@@ -642,6 +644,7 @@ struct TimeStepperView: View {
     var label: String
     var range: ClosedRange<Int>
     var isEnabled: Bool = true
+    @State private var isHovering = false
     
     var body: some View {
         HStack(spacing: 0) {
@@ -650,7 +653,13 @@ struct TimeStepperView: View {
                 TextField("", value: $value, formatter: NumberFormatter())
                     .textFieldStyle(PlainTextFieldStyle())
                     .multilineTextAlignment(.center)
-                    .frame(width: 25)
+                    .frame(width: 40, height: 22)
+                    .background(Color(NSColor.textBackgroundColor))
+                    .cornerRadius(3)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 3)
+                            .stroke(Color.gray.opacity(0.5), lineWidth: 0.5)
+                    )
                     .onSubmit {
                         validateRange()
                     }
@@ -661,37 +670,49 @@ struct TimeStepperView: View {
                 // Just show the number when disabled
                 Text("\(value)")
                     .multilineTextAlignment(.center)
-                    .frame(width: 25)
+                    .frame(width: 40, height: 22)
                     .foregroundColor(.blue)
             }
             
             // Label (h or m)
             Text(label)
                 .font(.system(.body, design: .monospaced))
+                .frame(width: 15)
             
             // Up/down buttons (only when enabled)
             if isEnabled {
-                VStack(spacing: 0) {
+                VStack(spacing: 1) {
                     Button(action: increment) {
                         Image(systemName: "chevron.up")
-                            .font(.system(size: 8))
-                            .padding(2)
+                            .font(.system(size: 10))
+                            .padding(4)
+                            .contentShape(Rectangle())
                     }
                     .buttonStyle(PlainButtonStyle())
+                    .background(isHovering ? Color(NSColor.controlBackgroundColor).opacity(0.8) : Color(NSColor.controlBackgroundColor).opacity(0.5))
+                    .cornerRadius(3)
                     
                     Button(action: decrement) {
                         Image(systemName: "chevron.down")
-                            .font(.system(size: 8))
-                            .padding(2)
+                            .font(.system(size: 10))
+                            .padding(4)
+                            .contentShape(Rectangle())
                     }
                     .buttonStyle(PlainButtonStyle())
+                    .background(isHovering ? Color(NSColor.controlBackgroundColor).opacity(0.8) : Color(NSColor.controlBackgroundColor).opacity(0.5))
+                    .cornerRadius(3)
                 }
-                .frame(width: 16)
+                .frame(width: 22)
             }
         }
-        .padding(4)
+        .padding(6)
         .background(Color(NSColor.controlBackgroundColor))
-        .cornerRadius(4)
+        .cornerRadius(6)
+        // Add hover effect for better interactive feedback
+        .contentShape(Rectangle())
+        .onHover { hovering in
+            isHovering = hovering
+        }
     }
     
     private func validateRange() {
