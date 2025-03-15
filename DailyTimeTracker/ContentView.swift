@@ -242,6 +242,7 @@ struct ContentView: View {
             VStack(alignment: .leading) {
                 Text("Tasks")
                     .font(.headline)
+                    .foregroundColor(Color.primary)
                     .padding(.horizontal)
                     .padding(.top, 8)
                 
@@ -252,7 +253,7 @@ struct ContentView: View {
                 if searchText.isEmpty {
                     List {
                         ForEach(groupedTasks.keys.sorted(), id: \.self) { timeOfDay in
-                            Section(header: Text(timeOfDay)) {
+                            Section(header: Text(timeOfDay).foregroundColor(Color.primary)) {
                                 ForEach(groupedTasks[timeOfDay]!, id: \.id) { task in
                                     TaskRow(task: task)
                                         .contextMenu {
@@ -296,6 +297,7 @@ struct ContentView: View {
                 HStack {
                     Text("Summary")
                         .font(.headline)
+                        .foregroundColor(Color.primary)
                     Spacer()
                 }
                 .padding(.horizontal)
@@ -303,13 +305,14 @@ struct ContentView: View {
                 
                 HStack {
                     Text("Total Time:")
+                        .foregroundColor(Color.primary)
                     Spacer()
                     Text("\(totalHours)h \(totalMinutes)m")
-                        .fontWeight(.bold)
                         .foregroundColor(.blue)
+                        .font(.system(.body, design: .monospaced))
                 }
                 .padding(.horizontal)
-                .padding(.bottom, 10)
+                .padding(.bottom, 8)
             }
         }
         .frame(width: 300, height: 400)
@@ -719,6 +722,7 @@ struct TimeStepperView: View {
 struct TaskRow: View {
     var task: TaskItem
     @State private var showingNotes = false
+    @Environment(\.colorScheme) private var colorScheme
     
     var body: some View {
         VStack {
@@ -726,10 +730,11 @@ struct TaskRow: View {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(task.name)
                         .fontWeight(.medium)
+                        .foregroundColor(colorScheme == .dark ? .white : .primary)
                     
                     Text(timeFormatter.string(from: task.createdAt))
                         .font(.caption)
-                        .foregroundColor(.gray)
+                        .foregroundColor(colorScheme == .dark ? .gray : .secondary)
                 }
                 
                 Spacer()
@@ -743,7 +748,7 @@ struct TaskRow: View {
                     Button(action: { showingNotes.toggle() }) {
                         Image(systemName: "note.text")
                             .font(.caption)
-                            .foregroundColor(.secondary)
+                            .foregroundColor(colorScheme == .dark ? .gray : .secondary)
                     }
                     .buttonStyle(PlainButtonStyle())
                 }
@@ -753,7 +758,7 @@ struct TaskRow: View {
             if showingNotes && !task.notes.isEmpty {
                 Text(task.notes)
                     .font(.caption)
-                    .foregroundColor(.secondary)
+                    .foregroundColor(colorScheme == .dark ? .white : .secondary)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.leading)
                     .padding(.top, 2)
