@@ -21,7 +21,11 @@ A powerful yet simple menu bar application for macOS that helps you track time s
 
 ## Screenshots
 
-[Screenshots would be placed here]
+![image](https://github.com/user-attachments/assets/2d90ea4d-ee1c-4258-8a0b-6e280f12443c)
+<img width="227" alt="image" src="https://github.com/user-attachments/assets/1b42efa4-73b3-43bb-bc92-020a0d7b8218" />
+<img width="232" alt="image" src="https://github.com/user-attachments/assets/5c791932-aa21-4c73-8a9f-59796a8a2cea" />
+<img width="407" alt="image" src="https://github.com/user-attachments/assets/fdf99eff-85a8-47ee-b5d3-9fd6b55cf916" />
+
 
 ## Requirements
 
