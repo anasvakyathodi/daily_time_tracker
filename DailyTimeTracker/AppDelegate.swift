@@ -17,6 +17,7 @@ extension Notification.Name {
     static let stopRecording = Notification.Name("stopRecording")
     static let closePopover = Notification.Name("closePopover")
     static let openPopoverForPrompt = Notification.Name("openPopoverForPrompt")
+    static let resetToToday = Notification.Name("resetToToday")
 }
 
 class AppDelegate: NSObject, NSApplicationDelegate {
@@ -25,6 +26,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     var persistenceController: PersistenceController!
     var isRecording = false
     var statusMenu: NSMenu!
+    var lastPopoverShowTime: Date = Date.distantPast
     
     func applicationDidFinishLaunching(_ notification: Notification) {
         // Create the SwiftUI view that provides the popover content
@@ -88,6 +90,14 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             name: .openPopoverForPrompt,
             object: nil
         )
+        
+        // Listen for when user switches to other applications
+        NSWorkspace.shared.notificationCenter.addObserver(
+            self,
+            selector: #selector(applicationDidActivate(_:)),
+            name: NSWorkspace.didActivateApplicationNotification,
+            object: nil
+        )
     }
     
     @objc func togglePopover(sender: NSStatusBarButton) {
@@ -100,6 +110,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             if popover.isShown {
                 popover.performClose(nil)
             } else {
+                // Reset to today's date when opening the popover
+                NotificationCenter.default.post(name: .resetToToday, object: nil)
+                
                 if let button = statusBarItem.button {
                     popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
                     popover.contentViewController?.view.window?.makeKey()
@@ -147,8 +160,31 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     
     @objc func openPopoverForPrompt() {
         if !popover.isShown, let button = statusBarItem.button {
+            // Reset to today's date when opening the popover for prompt
+            NotificationCenter.default.post(name: .resetToToday, object: nil)
+            
             popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
             popover.contentViewController?.view.window?.makeKey()
+        }
+    }
+    
+    @objc func applicationDidActivate(_ notification: Notification) {
+        // Check if the activated application is not our app
+        if let app = notification.userInfo?[NSWorkspace.applicationUserInfoKey] as? NSRunningApplication,
+           app.bundleIdentifier != Bundle.main.bundleIdentifier {
+            
+            // Add cooldown period to prevent too frequent popups (minimum 3 seconds between shows)
+            let now = Date()
+            guard now.timeIntervalSince(lastPopoverShowTime) > 3.0 else { return }
+            
+            // Another app was activated, show our popover after a short delay
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                if !self.popover.isShown, let button = self.statusBarItem.button {
+                    self.popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
+                    self.popover.contentViewController?.view.window?.makeKey()
+                    self.lastPopoverShowTime = Date()
+                }
+            }
         }
     }
     
@@ -179,5 +215,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 }
             }
         }
+    }
+    
+    deinit {
+        // Clean up observers
+        NotificationCenter.default.removeObserver(self)
+        NSWorkspace.shared.notificationCenter.removeObserver(self)
     }
 }

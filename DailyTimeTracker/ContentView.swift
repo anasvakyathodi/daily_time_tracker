@@ -355,6 +355,16 @@ struct ContentView: View {
                     }
                 }
             }
+            
+            // Listen for reset to today notification
+            NotificationCenter.default.addObserver(
+                forName: .resetToToday,
+                object: nil,
+                queue: .main
+            ) { _ in
+                selectedDate = Date()
+                loadTasks()
+            }
         }
         .sheet(isPresented: $showingNamePrompt) {
             TaskNamePromptView(
